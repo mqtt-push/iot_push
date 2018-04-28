@@ -22,3 +22,14 @@ lxr:
 logging:
   level:
       io.netty: debug
+
+spring:
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    password: 123456
+    username: magicbeans
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password:

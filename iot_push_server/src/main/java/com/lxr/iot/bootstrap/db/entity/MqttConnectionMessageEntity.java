@@ -1,4 +1,4 @@
-package com.lxr.iot.db.entity;
+package com.lxr.iot.bootstrap.db.entity;
 
 import io.netty.handler.codec.mqtt.MqttConnectVariableHeader;
 import io.netty.handler.codec.mqtt.MqttMessage;

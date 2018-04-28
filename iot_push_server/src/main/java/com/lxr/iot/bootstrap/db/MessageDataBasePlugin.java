@@ -1,6 +1,6 @@
-package com.lxr.iot.db;
+package com.lxr.iot.bootstrap.db;
 
-import com.lxr.iot.db.entity.MqttMessageEntity;
+import com.lxr.iot.bootstrap.db.entity.MqttMessageEntity;
 
 /**
  * @author jason
@@ -14,14 +14,14 @@ public interface MessageDataBasePlugin {
      * 设备上线
      * @return
      */
-    void onlineDevice(String clientId,String serverNode);
+    void onlineDevice(String clientId, String serverNode);
 
 
     /**
      * 设备下线
      * @return
      */
-    void offlineDevice(String client,String serverNode);
+    void offlineDevice(String client, String serverNode);
 
     /**
      * 保存保留消息
@@ -45,7 +45,7 @@ public interface MessageDataBasePlugin {
      * @param packageId
      * @return
      */
-    Boolean saveAckedMessage(String clientId,String topic,String packageId);
+    Boolean saveAckedMessage(String clientId, String topic, String packageId);
 
 
     /**
@@ -55,5 +55,5 @@ public interface MessageDataBasePlugin {
      * @param qos
      * @return
      */
-    Boolean saveSub(String clientId,String topic,Integer qos);
+    Boolean saveSub(String clientId, String topic, Integer qos);
 }

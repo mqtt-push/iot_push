@@ -1,11 +1,8 @@
-package com.lxr.iot.db.plugins;
+package com.lxr.iot.bootstrap.db.plugins;
 
-import com.lxr.iot.db.MessageDataBasePlugin;
-import com.lxr.iot.db.entity.MqttMessageEntity;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.BoundHashOperations;
+import com.lxr.iot.bootstrap.db.entity.MqttMessageEntity;
+import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashMap;
