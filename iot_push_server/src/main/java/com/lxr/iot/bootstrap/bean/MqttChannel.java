@@ -1,5 +1,6 @@
 package com.lxr.iot.bootstrap.bean;
 
+import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
 import com.lxr.iot.enums.SessionStatus;
 import com.lxr.iot.enums.SubStatus;
 import io.netty.channel.Channel;
@@ -7,6 +8,7 @@ import io.netty.util.AttributeKey;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import sun.nio.cs.ext.MS874;
 
 import java.util.Optional;
 import java.util.Set;
@@ -25,14 +27,16 @@ public class MqttChannel {
 
     private transient  volatile  Channel channel;
 
+    private MessageDataBasePlugin dataBasePlugin;
+
 
     private String deviceId;
 
 
     private boolean isWill;
 
-
-    private volatile SubStatus subStatus; // 是否订阅过主题
+    // 是否订阅过主题
+    private volatile SubStatus subStatus;
 
 
     private  Set<String> topic  ;
@@ -54,25 +58,30 @@ public class MqttChannel {
     private Set<Integer>  receive;
 
     public void  addRecevice(int messageId){
-        receive.add(messageId);
+//        receive.add(messageId);
+        dataBasePlugin.addClientReceiveMessage(deviceId,messageId);
     }
 
     public boolean  checkRecevice(int messageId){
-       return  receive.contains(messageId);
+//       return  receive.contains(messageId);
+        return dataBasePlugin.checkClientReceiveMsg(deviceId,messageId);
     }
 
     public boolean  removeRecevice(int messageId){
-        return receive.remove(messageId);
+//        return receive.remove(messageId);
+        return dataBasePlugin.removeClientReceiveMsg(deviceId,messageId);
     }
 
 
     public void addSendMqttMessage(int messageId,SendMqttMessage msg){
-        message.put(messageId,msg);
+//        message.put(messageId,msg);
+        dataBasePlugin.addClientAckMessage(deviceId,messageId,msg);
     }
 
 
     public SendMqttMessage getSendMqttMessage(int messageId){
-        return  message.get(messageId);
+//        return  message.get(messageId);
+        return dataBasePlugin.getClientAckMessage(messageId);
     }
 
 

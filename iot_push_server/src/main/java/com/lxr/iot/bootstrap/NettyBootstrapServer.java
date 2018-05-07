@@ -66,11 +66,11 @@ public class NettyBootstrapServer extends AbstractBootstrapServer {
                 .childOption(ChannelOption.TCP_NODELAY, serverBean.isTcpNodelay())
                 .childOption(ChannelOption.SO_KEEPALIVE, serverBean.isKeepalive())
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        bootstrap.bind(IpUtils.getHost(),serverBean.getPort()).addListener((ChannelFutureListener) channelFuture -> {
+        bootstrap.bind(serverBean.getPort()).addListener((ChannelFutureListener) channelFuture -> {
             if (channelFuture.isSuccess())
-                log.info("服务端启动成功【" + IpUtils.getHost() + ":" + serverBean.getPort() + "】");
+                log.info("服务端启动成功【" + serverBean.getPort() + "】");
             else
-                log.info("服务端启动失败【" + IpUtils.getHost() + ":" + serverBean.getPort() + "】");
+                log.info("服务端启动失败【"  + serverBean.getPort() + "】");
         });
     }
     /**

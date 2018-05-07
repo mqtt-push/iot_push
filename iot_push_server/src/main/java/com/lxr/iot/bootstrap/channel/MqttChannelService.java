@@ -16,10 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -31,7 +28,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @create 2017-11-21 13:59
  **/
 @Slf4j
-@Component
+//@Component
 public class MqttChannelService extends AbstractChannelService{
 
 
@@ -118,23 +115,23 @@ public class MqttChannelService extends AbstractChannelService{
                     channel.writeAndFlush(connAck);// 非清理会话
 
                 });         //发送 session  数据
-                ConcurrentLinkedQueue<SessionMessage> sessionMessages = clientSessionService.getByteBuf(payload.clientIdentifier());
+                Set<SessionMessage> sessionMessages = clientSessionService.getByteBuf(payload.clientIdentifier());
                 doIfElse(sessionMessages, messages -> messages != null && !messages.isEmpty(), byteBufs -> {
-                    SessionMessage sessionMessage;
-                    while ((sessionMessage = byteBufs.poll()) != null) {
-                        switch (sessionMessage.getQoS()) {
-                            case EXACTLY_ONCE:
-                                sendQosConfirmMsg(MqttQoS.EXACTLY_ONCE,getMqttChannel(deviceId), sessionMessage.getTopic(), sessionMessage.getByteBuf());
-                                break;
-                            case AT_MOST_ONCE:
-                                sendQos0Msg(channel, sessionMessage.getTopic(), sessionMessage.getByteBuf());
-                                break;
-                            case AT_LEAST_ONCE:
-                                sendQosConfirmMsg(MqttQoS.AT_LEAST_ONCE,getMqttChannel(deviceId), sessionMessage.getTopic(), sessionMessage.getByteBuf());
-                                break;
+                    for ( SessionMessage sessionMessage:byteBufs) {
+                        if(sessionMessage!=null){
+                            switch (sessionMessage.getQoS()) {
+                                case EXACTLY_ONCE:
+                                    sendQosConfirmMsg(MqttQoS.EXACTLY_ONCE,getMqttChannel(deviceId), sessionMessage.getTopic(), sessionMessage.getByteBuf());
+                                    break;
+                                case AT_MOST_ONCE:
+                                    sendQos0Msg(channel, sessionMessage.getTopic(), sessionMessage.getByteBuf());
+                                    break;
+                                case AT_LEAST_ONCE:
+                                    sendQosConfirmMsg(MqttQoS.AT_LEAST_ONCE,getMqttChannel(deviceId), sessionMessage.getTopic(), sessionMessage.getByteBuf());
+                                    break;
+                            }
                         }
                     }
-
                 });
             }
         });
@@ -174,8 +171,6 @@ public class MqttChannelService extends AbstractChannelService{
         return  Optional.ofNullable(mqttChannels.get(deviceId))
                 .map(mqttChannel -> {
                     switch (mqttChannel.getSessionStatus()){
-                        case OPEN:
-                            return false;
                         case CLOSE:
                             switch (mqttChannel.getSubStatus()){
                                 case YES: // 清除订阅  topic
@@ -195,22 +190,23 @@ public class MqttChannelService extends AbstractChannelService{
     /**
      * 订阅成功后 (发送保留消息)
      */
-    public void suscribeSuccess(String deviceId, Set<String> topics){
-        doIfElse(topics,topics1->!CollectionUtils.isEmpty(topics1),strings -> {
-            MqttChannel mqttChannel = mqttChannels.get(deviceId);
-            mqttChannel.setSubStatus(SubStatus.YES); // 设置订阅主题标识
-            mqttChannel.addTopic(strings);
-            executorService.execute(() -> {
-                Optional.ofNullable(mqttChannel).ifPresent(mqttChannel1 -> {
-                    if(mqttChannel1.isLogin()){
-                        strings.parallelStream().forEach(topic -> {
-                            addChannel(topic,mqttChannel);
-                            sendRetain(topic,mqttChannel); // 发送保留消息
-                        });
-                    }
-                });
-            });
-        });
+    @Override
+    public void suscribeSuccess(String deviceId, Map<String,Integer> topics){
+//        doIfElse(topics,topics1->!CollectionUtils.isEmpty(topics1),strings -> {
+//            MqttChannel mqttChannel = mqttChannels.get(deviceId);
+//            mqttChannel.setSubStatus(SubStatus.YES); // 设置订阅主题标识
+//            mqttChannel.addTopic(strings);
+//            executorService.execute(() -> {
+//                Optional.ofNullable(mqttChannel).ifPresent(mqttChannel1 -> {
+//                    if(mqttChannel1.isLogin()){
+//                        strings.parallelStream().forEach(topic -> {
+//                            addChannel(topic,mqttChannel);
+//                            sendRetain(topic,mqttChannel); // 发送保留消息
+//                        });
+//                    }
+//                });
+//            });
+//        });
     }
 
 
@@ -378,6 +374,7 @@ public class MqttChannelService extends AbstractChannelService{
      * @param willMeaasge 遗嘱消息
      * @param deviceId
      */
+    @Override
     public void sendWillMsg(WillMeaasge willMeaasge, String deviceId){
         Collection<MqttChannel> mqttChannels = getChannels(willMeaasge.getWillTopic(), topic -> cacheMap.getData(getTopic(topic)));
         if(!CollectionUtils.isEmpty(mqttChannels)){

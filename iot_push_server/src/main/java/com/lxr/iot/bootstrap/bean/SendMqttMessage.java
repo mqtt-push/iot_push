@@ -1,5 +1,6 @@
 package com.lxr.iot.bootstrap.bean;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lxr.iot.enums.ConfirmStatus;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttQoS;
@@ -18,6 +19,7 @@ public class SendMqttMessage {
 
     private int messageId;
 
+    @JsonIgnore
     private Channel channel;
 
     private volatile ConfirmStatus confirmStatus;

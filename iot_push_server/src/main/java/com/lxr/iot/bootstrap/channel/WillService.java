@@ -3,6 +3,8 @@ package com.lxr.iot.bootstrap.channel;
 import com.lxr.iot.bootstrap.bean.WillMeaasge;
 import com.lxr.iot.bootstrap.BaseApi;
 import com.lxr.iot.bootstrap.ChannelService;
+import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
+import com.sun.scenario.effect.impl.prism.PrTexture;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,26 +30,40 @@ public class WillService  implements BaseApi {
 
 
     @Autowired
-    ChannelService channelService;
+    private ChannelService channelService;
 
-    private static  ConcurrentHashMap<String,WillMeaasge> willMeaasges = new ConcurrentHashMap<>(); // deviceid -WillMeaasge
+    @Autowired
+    private MessageDataBasePlugin dataBasePlugin;
+
+    /**
+     *  deviceid -WillMeaasge
+     */
+    private static  ConcurrentHashMap<String,WillMeaasge> willMeaasges = new ConcurrentHashMap<>();
 
 
 
     /**
      * 保存遗嘱消息
+     *  // 替换旧的
      */
     public void save(String deviceid, WillMeaasge build) {
-        willMeaasges.put(deviceid,build); // 替换旧的
+//        willMeaasges.put(deviceid,build);
+        dataBasePlugin.saveClientWillMsg(deviceid,build);
     }
 
 
-    public void doSend( String deviceId) {  // 客户端断开连接后 开启遗嘱消息发送
-        if(  StringUtils.isNotBlank(deviceId)&&(willMeaasges.get(deviceId))!=null){
-            WillMeaasge willMeaasge = willMeaasges.get(deviceId);
-            channelService.sendWillMsg(willMeaasge,deviceId); // 发送遗嘱消息
-            if(!willMeaasge.isRetain()){ // 移除
-                willMeaasges.remove(deviceId);
+    /**
+     * 客户端断开连接后 开启遗嘱消息发送
+     * @param deviceId
+     */
+    public void doSend( String deviceId) {
+        WillMeaasge willMeaasge =dataBasePlugin.getClientWillMsg(deviceId);
+        if(  StringUtils.isNotBlank(deviceId)&&(willMeaasge)!=null){
+            // 发送遗嘱消息
+            channelService.sendWillMsg(willMeaasge,deviceId);
+            // 移除
+            if(!willMeaasge.isRetain()){
+                del(deviceId);
                 log.info("deviceId will message["+willMeaasge.getWillMessage()+"] is removed");
             }
         }
@@ -56,5 +72,8 @@ public class WillService  implements BaseApi {
     /**
      * 删除遗嘱消息
      */
-    public void del(String deviceid ) {willMeaasges.remove(deviceid);}
+    public void del(String deviceid ) {
+//        willMeaasges.remove(deviceid);
+        dataBasePlugin.removeClientWillMsg(deviceid);
+    }
 }

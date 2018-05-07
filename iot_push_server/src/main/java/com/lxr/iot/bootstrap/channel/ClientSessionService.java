@@ -1,9 +1,12 @@
 package com.lxr.iot.bootstrap.channel;
 
 import com.lxr.iot.bootstrap.bean.SessionMessage;
+import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -16,21 +19,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Service
 public class ClientSessionService {
 
-    private static ConcurrentHashMap<String,ConcurrentLinkedQueue<SessionMessage>>  queueSession  = new ConcurrentHashMap<>();  // 连接关闭后 保留此session 数据  deviceId
+    @Autowired
+    private MessageDataBasePlugin dataBasePlugin;
 
 
     public  void saveSessionMsg(String deviceId, SessionMessage sessionMessage) {
-        ConcurrentLinkedQueue<SessionMessage> sessionMessages = queueSession.getOrDefault(deviceId, new ConcurrentLinkedQueue<>());
-        boolean flag;
-        do{
-             flag = sessionMessages.add(sessionMessage);
-        }
-        while (!flag);
-        queueSession.put(deviceId,sessionMessages);
+        dataBasePlugin.saveSessionMsg(deviceId,sessionMessage);
     }
 
-    public  ConcurrentLinkedQueue<SessionMessage> getByteBuf(String deviceId){
-        return   Optional.ofNullable(deviceId).map(s -> queueSession.get(s))
-                .orElse(null);
+    public Set<SessionMessage> getByteBuf(String deviceId){
+        return dataBasePlugin.getSessionMsg(deviceId);
     }
 }

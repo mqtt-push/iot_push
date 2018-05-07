@@ -9,6 +9,7 @@ import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -24,7 +25,7 @@ public interface ChannelService {
     boolean connectSuccess(String s, MqttChannel build);
 
 
-    void suscribeSuccess(String deviceId, Set<String> topics);
+    void suscribeSuccess(String deviceId,Map<String,Integer> topics);
 
 
     void loginSuccess(Channel channel, String deviceId, MqttConnectMessage mqttConnectMessage);

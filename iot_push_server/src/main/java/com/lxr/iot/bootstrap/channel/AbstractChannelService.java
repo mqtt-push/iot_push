@@ -90,6 +90,7 @@ public abstract class AbstractChannelService extends PublishApiSevice implements
     /**
      * 获取channel
      */
+    @Override
     public MqttChannel getMqttChannel(String deviceId){
         return Optional.ofNullable(deviceId).map(s -> mqttChannels.get(s))
                 .orElse(null);
@@ -99,6 +100,7 @@ public abstract class AbstractChannelService extends PublishApiSevice implements
     /**
      * 获取channelId
      */
+    @Override
     public String  getDeviceId(Channel channel){
         return  Optional.ofNullable(channel).map( channel1->channel1.attr(_deviceId).get())
                 .orElse(null);

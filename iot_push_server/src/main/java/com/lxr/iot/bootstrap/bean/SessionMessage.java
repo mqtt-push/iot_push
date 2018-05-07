@@ -1,5 +1,6 @@
 package com.lxr.iot.bootstrap.bean;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +13,6 @@ import lombok.Data;
  **/
 @Builder
 @Data
-
 public class SessionMessage {
 
     private byte[]  byteBuf;
@@ -21,7 +21,7 @@ public class SessionMessage {
 
     private  String topic;
 
-
+    @JsonIgnore
     public String getString(){
         return new String(byteBuf);
     }

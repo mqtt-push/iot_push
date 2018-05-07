@@ -1,20 +1,21 @@
 package com.lxr.iot.auto;
 
+import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
+import com.lxr.iot.bootstrap.db.plugins.RedisDataBasePlugin;
 import com.lxr.iot.bootstrap.scan.SacnScheduled;
 import com.lxr.iot.bootstrap.scan.ScanRunnable;
 import com.lxr.iot.enums.ProtocolEnum;
 import com.lxr.iot.properties.InitBean;
+import com.lxr.iot.redis.ObjectRedisTemplate;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
+import org.springframework.data.redis.connection.Message;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 /**
  * 自动化配置初始化服务
@@ -39,19 +40,16 @@ public class ServerAutoConfigure {
     private static final  int BUF_SIZE=10*1024*1024;
 
 
-    public ServerAutoConfigure(){
-
-    }
-
     @Bean
     @ConditionalOnMissingBean(name = "sacnScheduled")
-    public ScanRunnable initRunable(@Autowired  InitBean serverBean){
+    public ScanRunnable initRunable(@Autowired  InitBean serverBean, MessageDataBasePlugin dataBasePlugin){
         long time =(serverBean==null || serverBean.getPeriod()<5)?10:serverBean.getPeriod();
-        ScanRunnable sacnScheduled = new SacnScheduled(time);
-        Thread scanRunnable = new Thread(sacnScheduled);
+        ScanRunnable scanScheduled = new SacnScheduled(time);
+        scanScheduled.setDataBasePlugin(dataBasePlugin);
+        Thread scanRunnable = new Thread(scanScheduled);
         scanRunnable.setDaemon(true);
         scanRunnable.start();
-        return sacnScheduled;
+        return scanScheduled;
     }
 
 
@@ -88,5 +86,16 @@ public class ServerAutoConfigure {
         return new InitServer(serverBean);
     }
 
+
+    @Bean
+    public ObjectRedisTemplate objectRedisTemplate(RedisConnectionFactory connectionFactory){
+        return  new ObjectRedisTemplate(connectionFactory);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public MessageDataBasePlugin dataBasePlugin(ObjectRedisTemplate redisTemplate){
+        return new RedisDataBasePlugin(redisTemplate);
+    }
 
 }

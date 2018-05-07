@@ -14,10 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -63,10 +60,6 @@ public class  MqttHandlerService extends ServerMqttHandlerService implements  Ba
         }
         return  Optional.ofNullable(mqttChannelService.getMqttChannel(deviceId))
                 .map(mqttChannel -> {
-                    switch (mqttChannel.getSessionStatus()){
-                        case OPEN:
-                            return false;
-                    }
                     mqttChannelService.loginSuccess(channel, deviceId, mqttConnectMessage);
                     return true;
                 }).orElseGet(() -> {
@@ -98,9 +91,10 @@ public class  MqttHandlerService extends ServerMqttHandlerService implements  Ba
      */
     @Override
     public void subscribe(Channel channel, MqttSubscribeMessage mqttSubscribeMessage) {
-        Set<String> topics = mqttSubscribeMessage.payload().topicSubscriptions().stream().map(mqttTopicSubscription ->
-                mqttTopicSubscription.topicName()
-        ).collect(Collectors.toSet());
+       Map<String,Integer> topics = new HashMap<>();
+        for (MqttTopicSubscription mqttTopicSubscription : mqttSubscribeMessage.payload().topicSubscriptions()) {
+            topics.put(mqttTopicSubscription.topicName(),mqttTopicSubscription.qualityOfService().value());
+        }
         mqttChannelService.suscribeSuccess(mqttChannelService.getDeviceId(channel), topics);
         subBack(channel, mqttSubscribeMessage, topics.size());
     }
