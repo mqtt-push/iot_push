@@ -1,5 +1,6 @@
 package com.lxr.iot.bootstrap.channel;
 
+import com.lxr.iot.bootstrap.SessionManager;
 import com.lxr.iot.bootstrap.bean.*;
 import com.lxr.iot.bootstrap.scan.ScanRunnable;
 import com.lxr.iot.enums.ConfirmStatus;
@@ -51,7 +52,7 @@ public class MqttChannelService extends AbstractChannelService{
      */
     @Override
     public void unsubscribe(String deviceId, List<String> topics1) {
-        Optional.ofNullable(mqttChannels.get(deviceId)).ifPresent(mqttChannel -> {
+        Optional.ofNullable(SessionManager.getInstance().getChannel(deviceId)).ifPresent(mqttChannel -> {
             topics1.forEach(topic -> {
                 deleteChannel(topic,mqttChannel);
             });
@@ -168,7 +169,7 @@ public class MqttChannelService extends AbstractChannelService{
      */
     @Override
     public boolean connectSuccess(String deviceId, MqttChannel build) {
-        return  Optional.ofNullable(mqttChannels.get(deviceId))
+        return  Optional.ofNullable(SessionManager.getInstance().getChannel(deviceId))
                 .map(mqttChannel -> {
                     switch (mqttChannel.getSessionStatus()){
                         case CLOSE:
@@ -178,10 +179,10 @@ public class MqttChannelService extends AbstractChannelService{
                                 case NO:
                             }
                     }
-                    mqttChannels.put(deviceId,build);
+                    SessionManager.getInstance().addChannel(deviceId,build);
                     return true;
                 }).orElseGet(() -> {
-                    mqttChannels.put(deviceId,build);
+                    SessionManager.getInstance().addChannel(deviceId,build);
                     return  true;
                 });
     }
@@ -318,7 +319,7 @@ public class MqttChannelService extends AbstractChannelService{
     public void closeSuccess(String deviceId,boolean isDisconnect) {
         if(StringUtils.isNotBlank(deviceId)){
             executorService.execute(() -> {
-                MqttChannel mqttChannel = mqttChannels.get(deviceId);
+                MqttChannel mqttChannel = SessionManager.getInstance().getChannel(deviceId);
                 Optional.ofNullable(mqttChannel).ifPresent(mqttChannel1 -> {
                     mqttChannel1.setSessionStatus(SessionStatus.CLOSE); // 设置关闭
                     mqttChannel1.close(); // 关闭channel
@@ -339,7 +340,7 @@ public class MqttChannelService extends AbstractChannelService{
                         });
                     }
                     else{  // 删除sub topic-消息
-                        mqttChannels.remove(deviceId); // 移除channelId  不保持会话 直接删除  保持会话 旧的在重新connect时替换
+                        SessionManager.getInstance().removeChannel(deviceId); // 移除channelId  不保持会话 直接删除  保持会话 旧的在重新connect时替换
                         switch (mqttChannel1.getSubStatus()){
                             case YES:
                                 deleteSubTopic(mqttChannel1);

@@ -5,8 +5,10 @@ import com.lxr.iot.bootstrap.bean.SendMqttMessage;
 import com.lxr.iot.bootstrap.bean.SessionMessage;
 import com.lxr.iot.bootstrap.bean.WillMeaasge;
 import com.lxr.iot.bootstrap.db.entity.MqttMessageEntity;
+import com.lxr.iot.enums.ConfirmStatus;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -85,6 +87,14 @@ public interface MessageDataBasePlugin {
      */
     void clearSub(String clientId);
 
+
+    /**
+     * 通过订阅关系获取订阅的客户端ID
+     * @param topics
+     * @return
+     */
+    Collection<String> getSubClients(String[] topics);
+
     /**
      * 保存连接的session消息
      * @param deviceId
@@ -127,7 +137,7 @@ public interface MessageDataBasePlugin {
      * @param messageId
      * @param msg
      */
-    void updateClientAckMessage(String deviceId,Integer messageId,SendMqttMessage msg);
+    void updateClientAckMessage(String deviceId,Integer messageId,ConfirmStatus status);
 
     /**
      * 添加客户端接收的消息

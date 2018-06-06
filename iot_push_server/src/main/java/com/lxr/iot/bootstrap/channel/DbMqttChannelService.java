@@ -1,5 +1,6 @@
 package com.lxr.iot.bootstrap.channel;
 
+import com.lxr.iot.bootstrap.SessionManager;
 import com.lxr.iot.bootstrap.bean.*;
 import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
 import com.lxr.iot.bootstrap.scan.ScanRunnable;
@@ -51,7 +52,7 @@ public class DbMqttChannelService extends AbstractChannelService   {
 
     @Override
     public boolean connectSuccess(String deviceId, MqttChannel build) {
-        return  Optional.ofNullable(mqttChannels.get(deviceId))
+        return  Optional.ofNullable(SessionManager.getInstance().getChannel(deviceId))
                 .map(mqttChannel -> {
                     switch (mqttChannel.getSessionStatus()){
                         case CLOSE:
@@ -62,10 +63,10 @@ public class DbMqttChannelService extends AbstractChannelService   {
                                 case NO:
                             }
                     }
-                    mqttChannels.put(deviceId,build);
+                    SessionManager.getInstance().addChannel(deviceId,build);
                     return true;
                 }).orElseGet(() -> {
-                    mqttChannels.put(deviceId,build);
+                    SessionManager.getInstance().addChannel(deviceId,build);
                     return  true;
                 });
     }
@@ -73,7 +74,7 @@ public class DbMqttChannelService extends AbstractChannelService   {
     @Override
     public void suscribeSuccess(String deviceId, Map<String,Integer> topics) {
         doIfElse(topics,topics1->!CollectionUtils.isEmpty(topics1), items -> {
-            MqttChannel mqttChannel = mqttChannels.get(deviceId);
+            MqttChannel mqttChannel = SessionManager.getInstance().getChannel(deviceId);
             mqttChannel.setSubStatus(SubStatus.YES); // 设置订阅主题标识
             mqttChannel.addTopic(items.keySet());
             executorService.execute(() -> {
@@ -170,7 +171,7 @@ public class DbMqttChannelService extends AbstractChannelService   {
         dataBasePlugin.offlineDevice(deviceId,initBean.getServerName());
         if(StringUtils.isNotBlank(deviceId)){
             executorService.execute(() -> {
-                MqttChannel mqttChannel = mqttChannels.get(deviceId);
+                MqttChannel mqttChannel = SessionManager.getInstance().getChannel(deviceId);
                 Optional.ofNullable(mqttChannel).ifPresent(mqttChannel1 -> {
                     mqttChannel1.setSessionStatus(SessionStatus.CLOSE); // 设置关闭
                     mqttChannel1.close(); // 关闭channel
@@ -191,7 +192,7 @@ public class DbMqttChannelService extends AbstractChannelService   {
                         });
                     }
                     else{  // 删除sub topic-消息
-                        mqttChannels.remove(deviceId); // 移除channelId  不保持会话 直接删除  保持会话 旧的在重新connect时替换
+                        SessionManager.getInstance().removeChannel(deviceId); // 移除channelId  不保持会话 直接删除  保持会话 旧的在重新connect时替换
                         switch (mqttChannel1.getSubStatus()){
                             case YES:
                                 dataBasePlugin.clearSub(deviceId);
@@ -212,7 +213,23 @@ public class DbMqttChannelService extends AbstractChannelService   {
 
     @Override
     public void sendWillMsg(WillMeaasge willMeaasge, String deviceId) {
-
+        Collection<MqttChannel> mqttChannels = getChannels(willMeaasge.getWillTopic(), topic -> cacheMap.getData(getTopic(topic)));
+        if(!CollectionUtils.isEmpty(mqttChannels)){
+            mqttChannels.forEach(mqttChannel -> {
+                switch (mqttChannel.getSessionStatus()){
+                    case CLOSE:
+                        clientSessionService.saveSessionMsg(mqttChannel.getDeviceId(),
+                                SessionMessage.builder()
+                                        .topic(willMeaasge.getWillTopic())
+                                        .qoS(MqttQoS.valueOf(willMeaasge.getQos()))
+                                        .byteBuf(willMeaasge.getWillMessage().getBytes()).build());
+                        break;
+                    case OPEN:
+                        writeWillMsg(mqttChannel,willMeaasge,deviceId);
+                        break;
+                }
+            });
+        }
     }
 
     @Override

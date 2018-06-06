@@ -4,6 +4,7 @@ import com.lxr.iot.bootstrap.BaseApi;
 import com.lxr.iot.bootstrap.BaseAuthService;
 import com.lxr.iot.bootstrap.ChannelService;
 import com.lxr.iot.bootstrap.bean.SendMqttMessage;
+import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
 import com.lxr.iot.enums.ConfirmStatus;
 import com.lxr.iot.mqtt.ServerMqttHandlerService;
 import io.netty.channel.Channel;
@@ -32,6 +33,9 @@ public class  MqttHandlerService extends ServerMqttHandlerService implements  Ba
     ChannelService mqttChannelService;
 
     private  final BaseAuthService baseAuthService;
+
+    @Autowired
+    private MessageDataBasePlugin dataBasePlugin;
 
     public MqttHandlerService(BaseAuthService baseAuthService) {
         this.baseAuthService = baseAuthService;
@@ -161,7 +165,8 @@ public class  MqttHandlerService extends ServerMqttHandlerService implements  Ba
     public void puback(Channel channel, MqttMessage mqttMessage) {
         MqttMessageIdVariableHeader messageIdVariableHeader = (MqttMessageIdVariableHeader) mqttMessage.variableHeader();
         int messageId = messageIdVariableHeader.messageId();
-        mqttChannelService.getMqttChannel(mqttChannelService.getDeviceId(channel)).getSendMqttMessage(messageId).setConfirmStatus(ConfirmStatus.COMPLETE); // 复制为空
+//        mqttChannelService.getMqttChannel(mqttChannelService.getDeviceId(channel)).getSendMqttMessage(messageId).setConfirmStatus(ConfirmStatus.COMPLETE); // 复制为空
+        dataBasePlugin.updateClientAckMessage(mqttChannelService.getDeviceId(channel),messageId,ConfirmStatus.COMPLETE);
     }
 
 
@@ -181,7 +186,8 @@ public class  MqttHandlerService extends ServerMqttHandlerService implements  Ba
     public void pubrec(Channel channel, MqttMessage mqttMessage ) {
         MqttMessageIdVariableHeader messageIdVariableHeader = (MqttMessageIdVariableHeader) mqttMessage.variableHeader();
         int messageId = messageIdVariableHeader.messageId();
-        mqttChannelService.getMqttChannel(mqttChannelService.getDeviceId(channel)).getSendMqttMessage(messageId).setConfirmStatus(ConfirmStatus.PUBREL); // 复制为空
+//        mqttChannelService.getMqttChannel(mqttChannelService.getDeviceId(channel)).getSendMqttMessage(messageId).setConfirmStatus(ConfirmStatus.PUBREL); // 复制为空
+        dataBasePlugin.updateClientAckMessage(mqttChannelService.getDeviceId(channel),messageId,ConfirmStatus.PUBREL);
         mqttChannelService.doPubrec(channel, messageId);
     }
 
@@ -192,7 +198,9 @@ public class  MqttHandlerService extends ServerMqttHandlerService implements  Ba
     public void pubrel(Channel channel, MqttMessage mqttMessage ) {
         MqttMessageIdVariableHeader mqttMessageIdVariableHeader = (MqttMessageIdVariableHeader) mqttMessage.variableHeader();
         int messageId = mqttMessageIdVariableHeader.messageId();
-        mqttChannelService.getMqttChannel(mqttChannelService.getDeviceId(channel)).getSendMqttMessage(messageId).setConfirmStatus(ConfirmStatus.COMPLETE); // 复制为空
+//        mqttChannelService.getMqttChannel(mqttChannelService.getDeviceId(channel)).getSendMqttMessage(messageId).setConfirmStatus(ConfirmStatus.COMPLETE);
+        dataBasePlugin.updateClientAckMessage(mqttChannelService.getDeviceId(channel),messageId,ConfirmStatus.COMPLETE);
+        // 复制为空
         mqttChannelService.doPubrel(channel, messageId);
 
     }
@@ -204,8 +212,9 @@ public class  MqttHandlerService extends ServerMqttHandlerService implements  Ba
     public void pubcomp(Channel channel, MqttMessage mqttMessage ) {
         MqttMessageIdVariableHeader mqttMessageIdVariableHeader = (MqttMessageIdVariableHeader) mqttMessage.variableHeader();
         int messageId = mqttMessageIdVariableHeader.messageId();
-        SendMqttMessage sendMqttMessage = mqttChannelService.getMqttChannel(mqttChannelService.getDeviceId(channel)).getSendMqttMessage(messageId);
-        sendMqttMessage.setConfirmStatus(ConfirmStatus.COMPLETE); // 复制为空
+//        SendMqttMessage sendMqttMessage = mqttChannelService.getMqttChannel(mqttChannelService.getDeviceId(channel)).getSendMqttMessage(messageId);
+//        sendMqttMessage.setConfirmStatus(ConfirmStatus.COMPLETE); // 复制为空
+        dataBasePlugin.updateClientAckMessage(mqttChannelService.getDeviceId(channel),messageId,ConfirmStatus.COMPLETE);
     }
 
     @Override

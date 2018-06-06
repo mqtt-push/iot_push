@@ -56,6 +56,7 @@ public abstract class AbstractBootstrapServer implements BootstrapServer {
         }
 
         intProtocolHandler(channelPipeline,serverBean);
+
         channelPipeline.addLast(new IdleStateHandler(serverBean.getHeart(),0,0));
         channelPipeline.addLast(  SpringBeanUtils.getBean(serverBean.getMqttHander()));
 

@@ -27,7 +27,7 @@ public class SacnScheduled extends ScanRunnable {
 
     @Override
     public void doInfo(SendMqttMessage poll) {
-        if(checkTime(poll.getTime()) && poll.getChannel().isActive()){
+        if(null!=poll && checkTime(poll.getTime()) && poll.getChannel().isActive()){
             poll.setTime(System.currentTimeMillis());
             switch (poll.getConfirmStatus()){
                 case PUB:

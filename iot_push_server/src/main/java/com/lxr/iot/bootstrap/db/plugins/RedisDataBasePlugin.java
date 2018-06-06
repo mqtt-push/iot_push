@@ -6,6 +6,7 @@ import com.lxr.iot.bootstrap.bean.SessionMessage;
 import com.lxr.iot.bootstrap.bean.WillMeaasge;
 import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
 import com.lxr.iot.bootstrap.db.entity.MqttMessageEntity;
+import com.lxr.iot.enums.ConfirmStatus;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -80,6 +81,11 @@ public class RedisDataBasePlugin implements MessageDataBasePlugin {
             topicMap.put(topic,qos);
         }
         redisTemplate.boundHashOps(KEY_FREFIX + "sub:" + clientId).putAll(topicMap);
+
+        //保存订阅主题和设备之间的关系
+        for (String topic: topics){
+            redisTemplate.boundSetOps(KEY_FREFIX + "sub-client:" + topic).add(clientId);
+        }
         return true;
     }
 
@@ -87,6 +93,11 @@ public class RedisDataBasePlugin implements MessageDataBasePlugin {
     public Boolean delSub(String clientId,String[] topics) {
         BoundHashOperations boundHashOperations = redisTemplate.boundHashOps(KEY_FREFIX + "sub:" + clientId);
         boundHashOperations.delete(topics);
+
+        //删除订阅主题和设备之间的关系
+        for (String topic: topics){
+            redisTemplate.boundSetOps(KEY_FREFIX + "sub-client:" + topic).remove(clientId);
+        }
         return true;
     }
 
@@ -95,6 +106,16 @@ public class RedisDataBasePlugin implements MessageDataBasePlugin {
         BoundHashOperations boundHashOperations = redisTemplate.boundHashOps(KEY_FREFIX + "sub:" + clientId);
         Set<String> keys = boundHashOperations.keys();
         Optional.ofNullable(keys).ifPresent(key->key.forEach(item->boundHashOperations.delete(item)));
+    }
+
+    @Override
+    public Collection<String> getSubClients(String[] topics) {
+        Set<String> clients = new HashSet<>();
+        for (String topic: topics){
+           Set topicsClient = redisTemplate.boundSetOps(KEY_FREFIX + "sub-client:" + topic).members();
+           clients.addAll(topicsClient);
+        }
+        return clients;
     }
 
     @Override
@@ -120,12 +141,17 @@ public class RedisDataBasePlugin implements MessageDataBasePlugin {
 
     @Override
     public void removeClientAckMessage(Integer messageId) {
-        redisTemplate.boundHashOps(KEY_FREFIX+"ack:message").delete(messageId);
+        redisTemplate.boundHashOps(KEY_FREFIX+"ack:message").delete(String.valueOf(messageId));
     }
 
     @Override
-    public void updateClientAckMessage(String deviceId, Integer messageId, SendMqttMessage msg) {
-        redisTemplate.boundHashOps(KEY_FREFIX+"ack:message").put(String.valueOf(messageId),msg);
+    public void updateClientAckMessage(String deviceId, Integer messageId, ConfirmStatus status) {
+      BoundHashOperations hashOperations =   redisTemplate.boundHashOps(KEY_FREFIX+"ack:message");
+        SendMqttMessage sendMqttMessage = (SendMqttMessage) hashOperations.get(String.valueOf(messageId));
+        if(null!=sendMqttMessage){
+            sendMqttMessage.setConfirmStatus(status);
+        }
+        hashOperations.put(String.valueOf(messageId),sendMqttMessage);
     }
 
     @Override

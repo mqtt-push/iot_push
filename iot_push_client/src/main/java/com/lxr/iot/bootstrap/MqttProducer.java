@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 public class MqttProducer  extends  AbsMqttProducer{
 
 
+    @Override
     public  Producer connect(ConnectOptions connectOptions){
         connectTo(connectOptions);
         return this;

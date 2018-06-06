@@ -78,6 +78,7 @@ public class SacnScheduled extends ScanRunnable {
 
     private class ScheduledPool implements Scheduled {
         private ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        @Override
         public ScheduledFuture<?> submit(Runnable runnable){
             return scheduledExecutorService.scheduleAtFixedRate(runnable,2,2, TimeUnit.SECONDS);
         }

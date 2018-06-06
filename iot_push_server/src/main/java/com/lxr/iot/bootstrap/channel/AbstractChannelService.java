@@ -2,12 +2,16 @@ package com.lxr.iot.bootstrap.channel;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.lxr.iot.bootstrap.SessionManager;
 import com.lxr.iot.bootstrap.bean.MqttChannel;
 import com.lxr.iot.bootstrap.bean.RetainMessage;
 import com.lxr.iot.bootstrap.BaseApi;
 import com.lxr.iot.bootstrap.ChannelService;
 import com.lxr.iot.bootstrap.channel.cache.CacheMap;
+import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
+import com.lxr.iot.bootstrap.db.plugins.RedisDataBasePlugin;
 import com.lxr.iot.bootstrap.scan.ScanRunnable;
+import com.lxr.iot.util.SpringBeanUtils;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.Op;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -43,8 +48,7 @@ public abstract class AbstractChannelService extends PublishApiSevice implements
     protected static CacheMap<String,MqttChannel> cacheMap= new CacheMap<>();
 
 
-    protected static ConcurrentHashMap<String ,MqttChannel> mqttChannels = new ConcurrentHashMap<>(); // deviceId - mqChannel 登录
-
+//    protected static ConcurrentHashMap<String ,MqttChannel> mqttChannels = new ConcurrentHashMap<>(); // deviceId - mqChannel 登录
 
     protected  static  ConcurrentHashMap<String,ConcurrentLinkedQueue<RetainMessage>> retain = new ConcurrentHashMap<>(); // topic - 保留消息
 
@@ -58,12 +62,20 @@ public abstract class AbstractChannelService extends PublishApiSevice implements
 
 
     protected  Collection<MqttChannel> getChannels(String topic,TopicFilter topicFilter){
-            try {
-                return  mqttChannelCache.get(topic, () -> topicFilter.filter(topic));
-            } catch (Exception e) {
-                log.info(String.format("guava cache key topic【%s】 channel   value== null ",topic));
+        MessageDataBasePlugin dataBasePlugin =  SpringBeanUtils.getBean(MessageDataBasePlugin.class);
+        Collection<String> clients =   dataBasePlugin.getSubClients(getTopic(topic));
+        Collection<MqttChannel> mqttChannels = new HashSet<>();
+        for (String client:clients){
+            MqttChannel channel = SessionManager.getInstance().getChannel(client);
+            if(null!=channel){
+                mqttChannels.add(channel);
             }
+        }
+        if(mqttChannels.size() == 0){
             return null;
+        }else{
+            return mqttChannels;
+        }
     }
 
 
@@ -92,7 +104,7 @@ public abstract class AbstractChannelService extends PublishApiSevice implements
      */
     @Override
     public MqttChannel getMqttChannel(String deviceId){
-        return Optional.ofNullable(deviceId).map(s -> mqttChannels.get(s))
+        return Optional.ofNullable(deviceId).map(s -> SessionManager.getInstance().getChannel(s))
                 .orElse(null);
 
     }
