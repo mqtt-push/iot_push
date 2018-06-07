@@ -114,7 +114,7 @@ public interface MessageDataBasePlugin {
      * 获取设备的待确认消息
      * @param messageId
      */
-    SendMqttMessage getClientAckMessage(int messageId);
+    SendMqttMessage getClientAckMessage(String deviceId,int messageId);
 
     /**
      * 保存连接的待确认消息
@@ -128,7 +128,7 @@ public interface MessageDataBasePlugin {
      * 删除客户的待确认消息
      * @param messageId
      */
-    void removeClientAckMessage(Integer messageId);
+    void removeClientAckMessage(String deviceId,Integer messageId);
 
 
     /**
@@ -164,10 +164,10 @@ public interface MessageDataBasePlugin {
 
     /**
      * 保存客户端遗言消息
-     * @param deviceid
-     * @param build
+     * @param deviceId
+     * @param meaasge
      */
-    void saveClientWillMsg(String deviceid, WillMeaasge meaasge);
+    void saveClientWillMsg(String deviceId, WillMeaasge meaasge);
 
     /**
      * 获取客户端的遗言消息
@@ -181,4 +181,11 @@ public interface MessageDataBasePlugin {
      * @param deviceId
      */
     void removeClientWillMsg(String deviceId);
+
+    /**
+     * 根据设备编号查看待确认消息
+     * @param device
+     * @return
+     */
+    Collection<SendMqttMessage> getClientAckMessages(String device);
 }

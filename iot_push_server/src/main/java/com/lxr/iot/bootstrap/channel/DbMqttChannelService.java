@@ -178,9 +178,9 @@ public class DbMqttChannelService extends AbstractChannelService   {
                     mqttChannel1.setChannel(null);
                     if(!mqttChannel1.isCleanSession()){ // 保持会话
                         // 处理 qos1 未确认数据
-                        ConcurrentHashMap<Integer, SendMqttMessage> message = mqttChannel1.getMessage();
+                        Collection<SendMqttMessage> message = mqttChannel1.getAllSendMessage();
                         Optional.ofNullable(message).ifPresent(integerConfirmMessageConcurrentHashMap -> {
-                            integerConfirmMessageConcurrentHashMap.forEach((integer, confirmMessage) -> doIfElse(confirmMessage, sendMqttMessage ->sendMqttMessage.getConfirmStatus()== ConfirmStatus.PUB, sendMqttMessage ->{
+                            integerConfirmMessageConcurrentHashMap.forEach((confirmMessage) -> doIfElse(confirmMessage, sendMqttMessage ->sendMqttMessage.getConfirmStatus()== ConfirmStatus.PUB, sendMqttMessage ->{
                                         clientSessionService.saveSessionMsg(mqttChannel.getDeviceId(), SessionMessage.builder()
                                                 .byteBuf(sendMqttMessage.getByteBuf())
                                                 .qoS(sendMqttMessage.getQos())
@@ -274,8 +274,6 @@ public class DbMqttChannelService extends AbstractChannelService   {
                     .isWill(mqttConnectVariableHeader.isWillFlag())
                     .subStatus(SubStatus.NO)
                     .topic(new CopyOnWriteArraySet<>())
-                    .message(new ConcurrentHashMap<>())
-                    .receive(new CopyOnWriteArraySet<>())
                     .build();
             if (connectSuccess(deviceId, build)) { // 初始化存储mqttchannel
                 if (mqttConnectVariableHeader.isWillFlag()) { // 遗嘱消息标志
@@ -316,7 +314,7 @@ public class DbMqttChannelService extends AbstractChannelService   {
                     channel.writeAndFlush(connAck);// 非清理会话
 
                 });         //发送 session  数据
-                Set<SessionMessage> sessionMessages = clientSessionService.getByteBuf(payload.clientIdentifier());
+                Set<SessionMessage> sessionMessages = clientSessionService.getSessionMsg(payload.clientIdentifier());
                 doIfElse(sessionMessages, messages -> messages != null && !messages.isEmpty(), byteBufs -> {
                     for ( SessionMessage sessionMessage:byteBufs) {
                         if(sessionMessage!=null){

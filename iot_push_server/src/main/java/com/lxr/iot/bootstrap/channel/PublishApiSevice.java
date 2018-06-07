@@ -71,7 +71,7 @@ public class PublishApiSevice {
         MqttPublishVariableHeader mqttPublishVariableHeader = new MqttPublishVariableHeader(topic,messageId );
         MqttPublishMessage mqttPublishMessage = new MqttPublishMessage(mqttFixedHeader,mqttPublishVariableHeader, Unpooled.wrappedBuffer(byteBuf));
         channel.writeAndFlush(mqttPublishMessage);
-        return addQueue(channel,messageId,topic,byteBuf,MqttQoS.AT_LEAST_ONCE,ConfirmStatus.PUB);
+        return buildMessage(channel,messageId,topic,byteBuf,MqttQoS.AT_LEAST_ONCE,ConfirmStatus.PUB);
     }
 
 
@@ -99,7 +99,7 @@ public class PublishApiSevice {
         MqttPublishVariableHeader mqttPublishVariableHeader = new MqttPublishVariableHeader(topic,messageId );
         MqttPublishMessage mqttPublishMessage = new MqttPublishMessage(mqttFixedHeader,mqttPublishVariableHeader, Unpooled.wrappedBuffer(byteBuf));
         channel.writeAndFlush(mqttPublishMessage);
-        return addQueue(channel,messageId,topic,byteBuf,MqttQoS.EXACTLY_ONCE,ConfirmStatus.PUB);
+        return buildMessage(channel,messageId,topic,byteBuf,MqttQoS.EXACTLY_ONCE,ConfirmStatus.PUB);
     }
 
 
@@ -123,7 +123,7 @@ public class PublishApiSevice {
         MqttPubAckMessage mqttPubAckMessage = new MqttPubAckMessage(mqttFixedHeader,from);
         Channel channel = mqttChannel.getChannel();
         channel.writeAndFlush(mqttPubAckMessage);
-        SendMqttMessage sendMqttMessage = addQueue(channel, messageId, null, null, null, ConfirmStatus.PUBREC);
+        SendMqttMessage sendMqttMessage = buildMessage(channel, messageId, null, null, null, ConfirmStatus.PUBREC);
         mqttChannel.addSendMqttMessage(messageId,sendMqttMessage);
     }
 
@@ -147,7 +147,7 @@ public class PublishApiSevice {
         channel.writeAndFlush(mqttPubAckMessage);
     }
 
-    private SendMqttMessage  addQueue(Channel channel,int messageId,String topic,byte[] datas,MqttQoS mqttQoS,ConfirmStatus confirmStatus){
+    private SendMqttMessage  buildMessage(Channel channel,int messageId,String topic,byte[] datas,MqttQoS mqttQoS,ConfirmStatus confirmStatus){
         SendMqttMessage build = SendMqttMessage.builder().
                 channel(channel).
                 confirmStatus(confirmStatus).
@@ -156,7 +156,7 @@ public class PublishApiSevice {
                 .qos(mqttQoS)
                 .byteBuf(datas)
                 .time(System.currentTimeMillis()).build();
-        scanRunnable.addQueue(build);
+//        scanRunnable.addQueue(build);
         return build;
     }
 

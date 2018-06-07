@@ -187,7 +187,7 @@ public class  MqttHandlerService extends ServerMqttHandlerService implements  Ba
         MqttMessageIdVariableHeader messageIdVariableHeader = (MqttMessageIdVariableHeader) mqttMessage.variableHeader();
         int messageId = messageIdVariableHeader.messageId();
 //        mqttChannelService.getMqttChannel(mqttChannelService.getDeviceId(channel)).getSendMqttMessage(messageId).setConfirmStatus(ConfirmStatus.PUBREL); // 复制为空
-        dataBasePlugin.updateClientAckMessage(mqttChannelService.getDeviceId(channel),messageId,ConfirmStatus.PUBREL);
+        dataBasePlugin.updateClientAckMessage(mqttChannelService.getDeviceId(channel),messageId,ConfirmStatus.PUBREC);
         mqttChannelService.doPubrec(channel, messageId);
     }
 
@@ -199,7 +199,7 @@ public class  MqttHandlerService extends ServerMqttHandlerService implements  Ba
         MqttMessageIdVariableHeader mqttMessageIdVariableHeader = (MqttMessageIdVariableHeader) mqttMessage.variableHeader();
         int messageId = mqttMessageIdVariableHeader.messageId();
 //        mqttChannelService.getMqttChannel(mqttChannelService.getDeviceId(channel)).getSendMqttMessage(messageId).setConfirmStatus(ConfirmStatus.COMPLETE);
-        dataBasePlugin.updateClientAckMessage(mqttChannelService.getDeviceId(channel),messageId,ConfirmStatus.COMPLETE);
+        dataBasePlugin.updateClientAckMessage(mqttChannelService.getDeviceId(channel),messageId,ConfirmStatus.PUBREL);
         // 复制为空
         mqttChannelService.doPubrel(channel, messageId);
 

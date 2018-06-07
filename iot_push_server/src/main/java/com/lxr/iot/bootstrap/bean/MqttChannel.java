@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 import sun.nio.cs.ext.MS874;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,10 +53,10 @@ public class MqttChannel {
 
 
 
-    private ConcurrentHashMap<Integer,SendMqttMessage>  message ; // messageId - message(qos1)  // 待确认消息
+//    private ConcurrentHashMap<Integer,SendMqttMessage>  message ; // messageId - message(qos1)  // 待确认消息
 
 
-    private Set<Integer>  receive;
+//    private Set<Integer>  receive;
 
     public void  addRecevice(int messageId){
 //        receive.add(messageId);
@@ -68,27 +69,23 @@ public class MqttChannel {
     }
 
     public boolean  removeRecevice(int messageId){
-//        return receive.remove(messageId);
         return dataBasePlugin.removeClientReceiveMsg(deviceId,messageId);
     }
 
 
     public void addSendMqttMessage(int messageId,SendMqttMessage msg){
-//        message.put(messageId,msg);
+        msg.setDeviceId(deviceId);
         dataBasePlugin.addClientAckMessage(deviceId,messageId,msg);
     }
 
 
     public SendMqttMessage getSendMqttMessage(int messageId){
-//        return  message.get(messageId);
-        return dataBasePlugin.getClientAckMessage(messageId);
+        return dataBasePlugin.getClientAckMessage(deviceId,messageId);
     }
 
-
-    public  void removeSendMqttMessage(int messageId){
-        message.remove(messageId);
+    public Collection<SendMqttMessage> getAllSendMessage(){
+        return dataBasePlugin.getClientAckMessages(deviceId);
     }
-
 
     /**
      * 判断当前channel 是否登录过

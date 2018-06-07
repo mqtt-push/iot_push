@@ -19,6 +19,8 @@ public class SendMqttMessage {
 
     private int messageId;
 
+    private String deviceId;
+
     @JsonIgnore
     private Channel channel;
 

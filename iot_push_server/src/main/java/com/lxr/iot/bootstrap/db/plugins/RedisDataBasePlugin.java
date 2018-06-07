@@ -7,6 +7,8 @@ import com.lxr.iot.bootstrap.bean.WillMeaasge;
 import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
 import com.lxr.iot.bootstrap.db.entity.MqttMessageEntity;
 import com.lxr.iot.enums.ConfirmStatus;
+import io.netty.handler.codec.mqtt.MqttQoS;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,6 +20,7 @@ import java.util.*;
  * @package com.lxr.iot.db.plugins
  * @Description 用做存储的redis插件
  */
+@Slf4j
 public class RedisDataBasePlugin implements MessageDataBasePlugin {
     private final String KEY_FREFIX = "mqtt:";
 
@@ -130,28 +133,41 @@ public class RedisDataBasePlugin implements MessageDataBasePlugin {
 
 
     @Override
-    public SendMqttMessage getClientAckMessage(int messageId) {
-       return (SendMqttMessage) redisTemplate.boundHashOps(KEY_FREFIX+"ack:message").get(String.valueOf(messageId));
+    public SendMqttMessage getClientAckMessage(String deviceId,int messageId) {
+       return (SendMqttMessage) redisTemplate.boundHashOps(KEY_FREFIX+"ack:message:"+deviceId).get(String.valueOf(messageId));
     }
 
     @Override
     public void addClientAckMessage(String deviceId, int messageId, SendMqttMessage msg) {
-        redisTemplate.boundHashOps(KEY_FREFIX+"ack:message").put(String.valueOf(messageId),msg);
+        redisTemplate.boundHashOps(KEY_FREFIX+"ack:message:"+deviceId).put(String.valueOf(messageId),msg);
     }
 
     @Override
-    public void removeClientAckMessage(Integer messageId) {
-        redisTemplate.boundHashOps(KEY_FREFIX+"ack:message").delete(String.valueOf(messageId));
+    public void removeClientAckMessage(String deviceId,Integer messageId) {
+        redisTemplate.boundHashOps(KEY_FREFIX+"ack:message:"+deviceId).delete(String.valueOf(messageId));
     }
 
     @Override
     public void updateClientAckMessage(String deviceId, Integer messageId, ConfirmStatus status) {
-      BoundHashOperations hashOperations =   redisTemplate.boundHashOps(KEY_FREFIX+"ack:message");
+      BoundHashOperations hashOperations =   redisTemplate.boundHashOps(KEY_FREFIX+"ack:message:"+deviceId);
         SendMqttMessage sendMqttMessage = (SendMqttMessage) hashOperations.get(String.valueOf(messageId));
-        if(null!=sendMqttMessage){
-            sendMqttMessage.setConfirmStatus(status);
+        if(sendMqttMessage!=null ){
+            if(ConfirmStatus.COMPLETE == status){
+                hashOperations.delete(String.valueOf(messageId));
+                removeClientReceiveMsg(deviceId,messageId);
+            }else{
+                sendMqttMessage.setConfirmStatus(status);
+                hashOperations.put(String.valueOf(messageId),sendMqttMessage);
+            }
+        }else{
+            log.error("确认消息不存在  "+messageId);
         }
-        hashOperations.put(String.valueOf(messageId),sendMqttMessage);
+    }
+
+    @Override
+    public Collection<SendMqttMessage> getClientAckMessages(String deviceId) {
+        BoundHashOperations hashOperations =   redisTemplate.boundHashOps(KEY_FREFIX+"ack:message:"+deviceId);
+        return hashOperations.values();
     }
 
     @Override
@@ -183,4 +199,6 @@ public class RedisDataBasePlugin implements MessageDataBasePlugin {
     public void removeClientWillMsg(String deviceId) {
         redisTemplate.boundHashOps(KEY_FREFIX+"will").delete(deviceId);
     }
+
+
 }

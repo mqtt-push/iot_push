@@ -1,11 +1,13 @@
 package com.lxr.iot.bootstrap.scan;
 
+import com.lxr.iot.bootstrap.SessionManager;
 import com.lxr.iot.bootstrap.bean.SendMqttMessage;
 import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
 import com.lxr.iot.enums.ConfirmStatus;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -35,24 +37,21 @@ public abstract class ScanRunnable  implements Runnable {
     }
 
 
-
     @Override
     public void run() {
         for(;;){
-            if(!queue.isEmpty()){
-                List<SendMqttMessage> list =new LinkedList<>();
-                SendMqttMessage poll ;
-                for(;(poll=queue.poll())!=null;){
-                    poll =dataBasePlugin.getClientAckMessage(poll.getMessageId());
-                    if(poll.getConfirmStatus()!= ConfirmStatus.COMPLETE){
-                        list.add(poll);
-                        doInfo(poll);
-                    }else {
-                        dataBasePlugin.removeClientAckMessage(poll.getMessageId());
+            Collection<String> devices =  SessionManager.getInstance().getDevices();
+            for (String device : devices){
+               Collection<SendMqttMessage> messages = dataBasePlugin.getClientAckMessages(device);
+               if(null!=messages && messages.size()>0){
+                    for (SendMqttMessage mqttMessage : messages){
+                        if(mqttMessage.getConfirmStatus() != ConfirmStatus.COMPLETE){
+                            mqttMessage.setChannel(SessionManager.getInstance().getChannel(device).getChannel());
+                            doInfo(mqttMessage);
+                        }
+
                     }
-                    break;
-                }
-                addQueues(list);
+               }
             }
         }
     }

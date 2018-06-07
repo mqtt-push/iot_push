@@ -2,6 +2,7 @@ package com.lxr.iot.bootstrap;
 
 import com.lxr.iot.bootstrap.bean.MqttChannel;
 
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -45,6 +46,14 @@ public class SessionManager {
      */
     public MqttChannel getChannel(String deviceId){
         return channelMap.get(deviceId);
+    }
+
+    /**
+     * 获取所有的在线设备列表
+     * @return
+     */
+    public Collection<String> getDevices(){
+        return channelMap.keySet();
     }
 
 

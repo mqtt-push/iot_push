@@ -27,7 +27,7 @@ public class ClientSessionService {
         dataBasePlugin.saveSessionMsg(deviceId,sessionMessage);
     }
 
-    public Set<SessionMessage> getByteBuf(String deviceId){
+    public Set<SessionMessage> getSessionMsg(String deviceId){
         return dataBasePlugin.getSessionMsg(deviceId);
     }
 }
