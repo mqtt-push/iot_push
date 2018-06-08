@@ -1,4 +1,4 @@
-package com.lxr.iot.redis;
+package com.lxr.iot.plugins.redis.common;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.serializer.support.DeserializingConverter;

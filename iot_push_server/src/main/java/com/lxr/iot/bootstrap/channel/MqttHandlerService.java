@@ -3,8 +3,7 @@ package com.lxr.iot.bootstrap.channel;
 import com.lxr.iot.bootstrap.BaseApi;
 import com.lxr.iot.bootstrap.BaseAuthService;
 import com.lxr.iot.bootstrap.ChannelService;
-import com.lxr.iot.bootstrap.bean.SendMqttMessage;
-import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
+import com.lxr.iot.server.plugins.MessageDataBasePlugin;
 import com.lxr.iot.enums.ConfirmStatus;
 import com.lxr.iot.mqtt.ServerMqttHandlerService;
 import io.netty.channel.Channel;
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 消息处理service

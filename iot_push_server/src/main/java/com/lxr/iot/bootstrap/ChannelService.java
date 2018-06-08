@@ -3,14 +3,13 @@ package com.lxr.iot.bootstrap;/**
  */
 
 import com.lxr.iot.bootstrap.bean.MqttChannel;
-import com.lxr.iot.bootstrap.bean.WillMeaasge;
+import com.lxr.iot.server.bean.WillMeaasge;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 消息处理

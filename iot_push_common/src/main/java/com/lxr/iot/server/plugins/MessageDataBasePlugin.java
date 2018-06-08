@@ -1,14 +1,12 @@
-package com.lxr.iot.bootstrap.db;
+package com.lxr.iot.server.plugins;
 
-import com.lxr.iot.bootstrap.bean.RetainMessage;
-import com.lxr.iot.bootstrap.bean.SendMqttMessage;
-import com.lxr.iot.bootstrap.bean.SessionMessage;
-import com.lxr.iot.bootstrap.bean.WillMeaasge;
-import com.lxr.iot.bootstrap.db.entity.MqttMessageEntity;
 import com.lxr.iot.enums.ConfirmStatus;
+import com.lxr.iot.server.bean.RetainMessage;
+import com.lxr.iot.server.bean.SendMqttMessage;
+import com.lxr.iot.server.bean.SessionMessage;
+import com.lxr.iot.server.bean.WillMeaasge;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -37,21 +35,21 @@ public interface MessageDataBasePlugin {
      * @param retainMessage
      * @return
      */
-    Boolean saveRetainMessage(String topic, RetainMessage retainMessage,boolean isClean);
+    Boolean saveRetainMessage(String topic, RetainMessage retainMessage, boolean isClean);
 
     /**
      * 根据主题获取保留消息
      * @param topic
      * @return
      */
-    Set<RetainMessage> getRetainMessage(String topic);
+    Collection<RetainMessage> getRetainMessage(String topic);
 
     /**
      * 保存消息记录
      * @param mqttMessageEntity
      * @return
      */
-    Boolean saveMessage(MqttMessageEntity mqttMessageEntity);
+    Boolean saveMessage(SendMqttMessage mqttMessageEntity);
 
 
     /**
@@ -114,7 +112,7 @@ public interface MessageDataBasePlugin {
      * 获取设备的待确认消息
      * @param messageId
      */
-    SendMqttMessage getClientAckMessage(String deviceId,int messageId);
+    SendMqttMessage getClientAckMessage(String deviceId, int messageId);
 
     /**
      * 保存连接的待确认消息
@@ -135,7 +133,6 @@ public interface MessageDataBasePlugin {
      * 更新客户端的待确认消息
      * @param deviceId
      * @param messageId
-     * @param msg
      */
     void updateClientAckMessage(String deviceId,Integer messageId,ConfirmStatus status);
 

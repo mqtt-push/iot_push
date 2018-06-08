@@ -1,8 +1,8 @@
 package com.lxr.iot.bootstrap.channel;
 
 import com.lxr.iot.bootstrap.bean.MqttChannel;
-import com.lxr.iot.bootstrap.bean.SendMqttMessage;
-import com.lxr.iot.bootstrap.bean.WillMeaasge;
+import com.lxr.iot.server.bean.SendMqttMessage;
+import com.lxr.iot.server.bean.WillMeaasge;
 import com.lxr.iot.bootstrap.scan.ScanRunnable;
 import com.lxr.iot.enums.ConfirmStatus;
 import com.lxr.iot.util.MessageId;

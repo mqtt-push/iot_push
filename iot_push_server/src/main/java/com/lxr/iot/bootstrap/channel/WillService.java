@@ -1,10 +1,9 @@
 package com.lxr.iot.bootstrap.channel;
 
-import com.lxr.iot.bootstrap.bean.WillMeaasge;
+import com.lxr.iot.server.bean.WillMeaasge;
 import com.lxr.iot.bootstrap.BaseApi;
 import com.lxr.iot.bootstrap.ChannelService;
-import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
-import com.sun.scenario.effect.impl.prism.PrTexture;
+import com.lxr.iot.server.plugins.MessageDataBasePlugin;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

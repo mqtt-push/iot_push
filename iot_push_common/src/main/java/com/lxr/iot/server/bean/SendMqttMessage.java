@@ -1,4 +1,4 @@
-package com.lxr.iot.bootstrap.bean;
+package com.lxr.iot.server.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lxr.iot.enums.ConfirmStatus;

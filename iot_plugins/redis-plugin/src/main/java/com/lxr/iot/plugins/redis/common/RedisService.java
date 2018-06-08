@@ -1,4 +1,4 @@
-package com.lxr.iot.redis;
+package com.lxr.iot.plugins.redis.common;
 
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;

@@ -1,6 +1,7 @@
 package com.lxr.iot.bootstrap.bean;
 
-import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
+import com.lxr.iot.server.bean.SendMqttMessage;
+import com.lxr.iot.server.plugins.MessageDataBasePlugin;
 import com.lxr.iot.enums.SessionStatus;
 import com.lxr.iot.enums.SubStatus;
 import io.netty.channel.Channel;
@@ -8,12 +9,10 @@ import io.netty.util.AttributeKey;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import sun.nio.cs.ext.MS874;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * channel 封装类

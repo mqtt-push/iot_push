@@ -1,4 +1,4 @@
-package com.lxr.iot.redis;
+package com.lxr.iot.plugins.redis.common;
 
 import org.springframework.data.redis.connection.DefaultStringRedisConnection;
 import org.springframework.data.redis.connection.RedisConnection;

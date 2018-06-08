@@ -1,4 +1,4 @@
-package com.lxr.iot.bootstrap.bean;
+package com.lxr.iot.server.bean;
 
 import lombok.Builder;
 import lombok.Data;

@@ -12,6 +12,7 @@
         <module>iot_push_client</module>
         <module>iot_push_client_starter_test</module>
         <module>iot_push_server_starter_test</module>
+        <module>iot_plugins</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -25,6 +26,14 @@
         <java.version>1.8</java.version>
         <springboot.version>1.5.3.RELEASE</springboot.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>nexus-aliyun</id>
+            <name>Nexus aliyun</name>
+            <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
 
 
 </project>

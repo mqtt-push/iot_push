@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxr.iot.plugin.mysql.mapper.ClientMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.lxr.iot.plugin.mysql.entity.Client">
+    <result column="id" property="id" />
+    <result column="create_time" property="createTime" />
+    <result column="update_time" property="updateTime" />
+        <result column="clientid" property="clientid" />
+        <result column="state" property="state" />
+        <result column="node" property="node" />
+        <result column="online_at" property="onlineAt" />
+        <result column="offline_at" property="offlineAt" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+    id,
+    create_time AS createTime,
+    update_time AS updateTime,
+        clientid, state, node, online_at AS onlineAt, offline_at AS offlineAt
+    </sql>
+
+</mapper>

@@ -1,21 +1,16 @@
 package com.lxr.iot.auto;
 
-import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
-import com.lxr.iot.bootstrap.db.plugins.RedisDataBasePlugin;
 import com.lxr.iot.bootstrap.scan.SacnScheduled;
 import com.lxr.iot.bootstrap.scan.ScanRunnable;
 import com.lxr.iot.enums.ProtocolEnum;
 import com.lxr.iot.properties.InitBean;
-import com.lxr.iot.redis.ObjectRedisTemplate;
+import com.lxr.iot.server.plugins.MessageDataBasePlugin;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.Message;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 /**
  * 自动化配置初始化服务
@@ -24,10 +19,8 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
  * @create 2017-11-29 19:52
  **/
 @Configuration
-@ConditionalOnClass
 @EnableConfigurationProperties({InitBean.class})
 public class ServerAutoConfigure {
-
 
     private static  final  int _BLACKLOG =   1024;
 
@@ -87,15 +80,5 @@ public class ServerAutoConfigure {
     }
 
 
-    @Bean
-    public ObjectRedisTemplate objectRedisTemplate(RedisConnectionFactory connectionFactory){
-        return  new ObjectRedisTemplate(connectionFactory);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public MessageDataBasePlugin dataBasePlugin(ObjectRedisTemplate redisTemplate){
-        return new RedisDataBasePlugin(redisTemplate);
-    }
 
 }

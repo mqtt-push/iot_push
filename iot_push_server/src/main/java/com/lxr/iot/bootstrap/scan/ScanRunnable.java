@@ -1,14 +1,13 @@
 package com.lxr.iot.bootstrap.scan;
 
 import com.lxr.iot.bootstrap.SessionManager;
-import com.lxr.iot.bootstrap.bean.SendMqttMessage;
-import com.lxr.iot.bootstrap.db.MessageDataBasePlugin;
+import com.lxr.iot.server.bean.SendMqttMessage;
+import com.lxr.iot.server.plugins.MessageDataBasePlugin;
 import com.lxr.iot.enums.ConfirmStatus;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
