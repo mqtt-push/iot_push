@@ -100,7 +100,7 @@ public class DbMqttChannelService extends AbstractChannelService   {
      * @param mqttChannel
      */
     private void sendRetain(String topic, MqttChannel mqttChannel) {
-       Set<RetainMessage> retainMessageSet = dataBasePlugin.getRetainMessage(topic);
+        Collection<RetainMessage> retainMessageSet = dataBasePlugin.getRetainMessage(topic);
        Optional.ofNullable(retainMessageSet).ifPresent(messageSet->{
            messageSet.parallelStream().forEach(msg->{
                log.info("【发送保留消息】"+mqttChannel.getChannel().remoteAddress()+":"+msg.getString()+"【成功】");
