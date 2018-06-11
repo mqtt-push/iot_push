@@ -1,6 +1,6 @@
 package com.lxr.iot.plugin.mysql.mapper;
 
-import com.lxr.iot.plugin.mysql.entity.Sub;
+import com.lxr.iot.plugin.mysql.entity.ReceiveMsg;
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.mapper.BaseMapper;
  * @author null123
  * @since 2018-06-11
  */
-public interface SubMapper extends BaseMapper<Sub> {
+public interface ReceiveMsgMapper extends BaseMapper<ReceiveMsg> {
 
 }

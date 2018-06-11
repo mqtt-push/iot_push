@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxr.iot.plugin.mysql.mapper.AckMsgMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.lxr.iot.plugin.mysql.entity.AckMsg">
+    <result column="id" property="id" />
+        <result column="mid" property="mid" />
+        <result column="deviceId" property="deviceId" />
+        <result column="confirmStatus" property="confirmStatus" />
+        <result column="arrive" property="arrive" />
+        <result column="content" property="content" />
+        <result column="retain" property="retain" />
+        <result column="qos" property="qos" />
+        <result column="topic" property="topic" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+    id,
+        mid, deviceId, confirmStatus, arrive, content, retain, qos, topic
+    </sql>
+
+</mapper>

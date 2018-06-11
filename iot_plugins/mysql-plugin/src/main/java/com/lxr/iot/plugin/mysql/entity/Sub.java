@@ -4,9 +4,10 @@ import com.baomidou.mybatisplus.annotations.TableName;
 
 import java.io.Serializable;
 
+
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author null123
@@ -54,9 +55,9 @@ public class Sub extends BaseEntity<Sub> {
     @Override
     public String toString() {
         return "Sub{" +
-        "clientid=" + clientid +
-        ", topic=" + topic +
-        ", qos=" + qos +
-        "}";
+                "clientid=" + clientid +
+                ", topic=" + topic +
+                ", qos=" + qos +
+                "}";
     }
 }

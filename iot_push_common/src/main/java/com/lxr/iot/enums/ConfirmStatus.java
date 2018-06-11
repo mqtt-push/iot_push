@@ -12,5 +12,16 @@ public enum ConfirmStatus {
     PUB,
     PUBREC,
     PUBREL,
-    COMPLETE,
+    COMPLETE;
+
+
+    public static ConfirmStatus valueOf(int ordinal){
+        ConfirmStatus[] values = ConfirmStatus.values();
+        for( ConfirmStatus status : values){
+            if(status.ordinal() == ordinal){
+                return status;
+            }
+        }
+        return null;
+    }
 }

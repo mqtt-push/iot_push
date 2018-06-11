@@ -3,19 +3,16 @@ package com.lxr.iot.plugin.mysql;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.lxr.iot.enums.ConfirmStatus;
-import com.lxr.iot.plugin.mysql.common.DTO2VOUtil;
 import com.lxr.iot.plugin.mysql.entity.*;
 import com.lxr.iot.plugin.mysql.enums.ClientState;
-import com.lxr.iot.plugin.mysql.service.IClientService;
-import com.lxr.iot.plugin.mysql.service.IRetainService;
-import com.lxr.iot.plugin.mysql.service.ISubService;
+import com.lxr.iot.plugin.mysql.service.*;
 import com.lxr.iot.server.bean.RetainMessage;
 import com.lxr.iot.server.bean.SendMqttMessage;
 import com.lxr.iot.server.bean.SessionMessage;
 import com.lxr.iot.server.bean.WillMeaasge;
 import com.lxr.iot.server.plugins.MessageDataBasePlugin;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import org.apache.commons.lang3.ObjectUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -25,6 +22,7 @@ import java.util.*;
  * @package com.lxr.iot.plugin.mysql
  * @Description
  */
+@Slf4j
 public class MysqlDataBasePlugin implements MessageDataBasePlugin {
 
     @Resource
@@ -35,6 +33,15 @@ public class MysqlDataBasePlugin implements MessageDataBasePlugin {
 
     @Resource
     private IRetainService retainService;
+
+    @Resource
+    private IWillMsgService willMsgService;
+
+    @Resource
+    private IAckMsgService ackMsgService;
+
+    @Resource
+    private IReceiveMsgService receiveMsgService;
 
     @Override
     public void onlineDevice(String clientId, String serverNode) {
@@ -91,13 +98,7 @@ public class MysqlDataBasePlugin implements MessageDataBasePlugin {
 
 
 
-    @Override
-    public boolean checkClientReceiveMsg(String deviceId, int messageId) {
 
-
-
-        return false;
-    }
 
 
 
@@ -133,7 +134,7 @@ public class MysqlDataBasePlugin implements MessageDataBasePlugin {
             sub.setQos(qos);
             subs.add(sub);
         }
-        return subService.insertBatch(subs);
+        return subService.saveSub(subs);
     }
 
     @Override
@@ -150,66 +151,164 @@ public class MysqlDataBasePlugin implements MessageDataBasePlugin {
 
     @Override
     public Collection<String> getSubClients(String[] topics) {
-        return null;
+        return subService.selectSubClients(topics);
     }
 
     @Override
     public void saveSessionMsg(String deviceId, SessionMessage sessionMessage) {
 
+
     }
 
     @Override
     public Set<SessionMessage> getSessionMsg(String deviceId) {
-        return null;
+        Set<SessionMessage> sessioinMsgs = new HashSet<>();
+        Wrapper<AckMsg> wrapper = new EntityWrapper<>();
+        wrapper.eq("deviceId",deviceId);
+        List<AckMsg> ackMsgList =  ackMsgService.selectList(wrapper);
+        for (AckMsg msg:ackMsgList){
+            SessionMessage sesMsg = SessionMessage.builder()
+                   .byteBuf(msg.getContent().getBytes())
+                   .qoS(MqttQoS.valueOf(msg.getQos()))
+                   .topic(msg.getTopic())
+                   .build();
+           sessioinMsgs.add(sesMsg);
+
+        }
+        return sessioinMsgs;
     }
 
     @Override
     public SendMqttMessage getClientAckMessage(String deviceId, int messageId) {
-        return null;
+        Wrapper<AckMsg> wrapper = new EntityWrapper<>();
+        wrapper.eq("deviceId",deviceId).and().eq("mid",messageId);
+        AckMsg msg = ackMsgService.selectOne(wrapper);
+        return SendMqttMessage.builder()
+                .byteBuf(msg.getContent().getBytes())
+                .confirmStatus(ConfirmStatus.valueOf(msg.getConfirmStatus()))
+                .deviceId(msg.getDeviceId())
+                .isRetain(msg.getRetain())
+                .qos(MqttQoS.valueOf(msg.getQos()))
+                .time(msg.getArrive().getTime())
+                .build();
     }
 
     @Override
     public void addClientAckMessage(String deviceId, int messageId, SendMqttMessage msg) {
 
+        AckMsg ackMsg = new AckMsg();
+        ackMsg.setArrive(new Date(msg.getTime()));
+        ackMsg.setConfirmStatus(msg.getConfirmStatus().ordinal());
+        ackMsg.setContent(new String(msg.getByteBuf()));
+        ackMsg.setMid(msg.getMessageId());
+        ackMsg.setQos(msg.getQos().value());
+        ackMsg.setTopic(msg.getTopic());
+        ackMsg.setRetain(msg.isRetain());
+        ackMsg.setDeviceId(msg.getDeviceId());
+        ackMsg.insert();
+
     }
 
     @Override
     public void removeClientAckMessage(String deviceId, Integer messageId) {
+        Wrapper<AckMsg> wrapper = new EntityWrapper<>();
+        wrapper.eq("deviceId",deviceId).and().eq("mid",messageId);
+        ackMsgService.delete(wrapper);
 
     }
 
     @Override
     public void updateClientAckMessage(String deviceId, Integer messageId, ConfirmStatus status) {
-
-    }
-
-    @Override
-    public void addClientReceiveMessage(String deviceId, int messageId) {
-
-    }
-
-    @Override
-    public boolean removeClientReceiveMsg(String deviceId, int messageId) {
-        return false;
-    }
-
-    @Override
-    public void saveClientWillMsg(String deviceId, WillMeaasge meaasge) {
-
-    }
-
-    @Override
-    public WillMeaasge getClientWillMsg(String deviceId) {
-        return null;
-    }
-
-    @Override
-    public void removeClientWillMsg(String deviceId) {
+        Wrapper<AckMsg> wrapper = new EntityWrapper<>();
+        wrapper.eq("deviceId",deviceId).and().eq("mid",messageId);
+        AckMsg ackMsg = ackMsgService.selectOne(wrapper);
+        if(null!=ackMsg){
+            if(ackMsg.getConfirmStatus()==  ConfirmStatus.COMPLETE.ordinal() ){
+                ackMsgService.delete(wrapper);
+            }else{
+                ackMsg.setConfirmStatus(status.ordinal());
+                ackMsgService.updateById(ackMsg);
+            }
+        }else{
+            log.error("确认消息不存在  "+messageId);
+        }
 
     }
 
     @Override
     public Collection<SendMqttMessage> getClientAckMessages(String device) {
-        return null;
+        Wrapper<AckMsg> wrapper = new EntityWrapper<>();
+        wrapper.eq("deviceId",device);
+        List<AckMsg> ackMsgList = ackMsgService.selectList(wrapper);
+        List<SendMqttMessage> sendMqttMessageList = new ArrayList<>();
+        for (AckMsg msg : ackMsgList){
+           SendMqttMessage sendMqttMessage =  SendMqttMessage.builder()
+                    .byteBuf(msg.getContent().getBytes())
+                    .confirmStatus(ConfirmStatus.valueOf(msg.getConfirmStatus()))
+                    .deviceId(msg.getDeviceId())
+                    .isRetain(msg.getRetain())
+                    .qos(MqttQoS.valueOf(msg.getQos()))
+                    .time(msg.getArrive().getTime())
+                    .build();
+           sendMqttMessageList.add(sendMqttMessage);
+        }
+        return sendMqttMessageList;
     }
+
+    @Override
+    public void addClientReceiveMessage(String deviceId, int messageId) {
+
+        ReceiveMsg receiveMsg = new ReceiveMsg();
+        receiveMsg.setDeviceId(deviceId);
+        receiveMsg.setMid(messageId);
+        receiveMsgService.insert(receiveMsg);
+
+    }
+
+    @Override
+    public boolean checkClientReceiveMsg(String deviceId, int messageId) {
+        Wrapper<ReceiveMsg> wrapper = new EntityWrapper<>();
+        wrapper.eq("deviceId",deviceId).and().eq("mid",messageId);
+        return receiveMsgService.selectOne(wrapper)!=null?true:false;
+    }
+
+    @Override
+    public boolean removeClientReceiveMsg(String deviceId, int messageId) {
+        Wrapper<ReceiveMsg> wrapper = new EntityWrapper<>();
+        wrapper.eq("deviceId",deviceId).and().eq("mid",messageId);
+        return receiveMsgService.delete(wrapper);
+    }
+
+    @Override
+    public void saveClientWillMsg(String deviceId, WillMeaasge meaasge) {
+        WillMsg willMsg = new WillMsg();
+        willMsg.setQos(meaasge.getQos());
+        willMsg.setRetain(meaasge.isRetain());
+        willMsg.setWillTopic(meaasge.getWillTopic());
+        willMsg.setWillMessage(meaasge.getWillMessage());
+        willMsg.insert();
+    }
+
+    @Override
+    public WillMeaasge getClientWillMsg(String deviceId) {
+        Wrapper<WillMsg> wrapper = new EntityWrapper<>();
+        wrapper.eq("deviceId",deviceId);
+        WillMsg willMsg =  willMsgService.selectOne(wrapper);
+        return WillMeaasge.builder()
+                .willMessage(willMsg.getWillMessage())
+                .willTopic(willMsg.getWillTopic())
+                .isRetain(willMsg.isRetain())
+                .qos(willMsg.getQos())
+                .build();
+    }
+
+    @Override
+    public void removeClientWillMsg(String deviceId) {
+        Wrapper<WillMsg> wrapper = new EntityWrapper<>();
+        wrapper.eq("deviceId",deviceId);
+        willMsgService.delete(wrapper);
+    }
+
+
+
 }
