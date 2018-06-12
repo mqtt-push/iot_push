@@ -5,9 +5,7 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.lxr.iot.plugin.mysql.entity.Sub;
 import com.lxr.iot.plugin.mysql.mapper.SubMapper;
-import com.lxr.iot.plugin.mysql.service.ISubClientService;
 import com.lxr.iot.plugin.mysql.service.ISubService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 
 /**
  * <p>

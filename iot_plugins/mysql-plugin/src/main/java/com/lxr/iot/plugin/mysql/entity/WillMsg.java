@@ -25,8 +25,6 @@ public class WillMsg extends BaseEntity<WillMsg> {
     private Integer qos;
     private boolean retain;
 
-    @TableField("creeate_time")
-    private Date creeateTime;
 
     public String getDeviceId() {
         return deviceId;
@@ -68,13 +66,6 @@ public class WillMsg extends BaseEntity<WillMsg> {
         this.retain = retain;
     }
 
-    public Date getCreeateTime() {
-        return creeateTime;
-    }
-
-    public void setCreeateTime(Date creeateTime) {
-        this.creeateTime = creeateTime;
-    }
 
     @Override
     protected Serializable pkVal() {
@@ -88,7 +79,6 @@ public class WillMsg extends BaseEntity<WillMsg> {
         ", willMessage=" + willMessage +
         ", qos=" + qos +
         ", retain=" + retain +
-        ", creeateTime=" + creeateTime +
         "}";
     }
 }

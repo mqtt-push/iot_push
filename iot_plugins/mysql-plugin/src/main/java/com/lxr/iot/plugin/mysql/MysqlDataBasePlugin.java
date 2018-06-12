@@ -51,7 +51,7 @@ public class MysqlDataBasePlugin implements MessageDataBasePlugin {
        Client client =  clientService.selectOne(entityWrapper);
        if(null!= client){
            client.setOnlineAt(new Date());
-           client.insert();
+           client.updateById();
        }else{
            client = new Client();
            client.setOnlineAt(new Date());
@@ -69,7 +69,7 @@ public class MysqlDataBasePlugin implements MessageDataBasePlugin {
         Client client =  clientService.selectOne(entityWrapper);
         if(null!= client){
             client.setOfflineAt(new Date());
-            client.insert();
+            client.updateById();
         }
     }
 
@@ -281,12 +281,24 @@ public class MysqlDataBasePlugin implements MessageDataBasePlugin {
 
     @Override
     public void saveClientWillMsg(String deviceId, WillMeaasge meaasge) {
-        WillMsg willMsg = new WillMsg();
-        willMsg.setQos(meaasge.getQos());
-        willMsg.setRetain(meaasge.isRetain());
-        willMsg.setWillTopic(meaasge.getWillTopic());
-        willMsg.setWillMessage(meaasge.getWillMessage());
-        willMsg.insert();
+
+        Wrapper<WillMsg> wrapper = new EntityWrapper<>();
+        wrapper.eq("deviceId",deviceId).and().eq("willTopic",meaasge.getWillTopic());
+        WillMsg willMsg = willMsgService.selectOne(wrapper);
+        if(null!=willMsg){
+            willMsg.setWillMessage(meaasge.getWillMessage());
+            willMsg.setQos(meaasge.getQos());
+            willMsg.setRetain(meaasge.isRetain());
+            willMsg.updateById();
+        }else{
+            willMsg = new WillMsg();
+            willMsg.setQos(meaasge.getQos());
+            willMsg.setRetain(meaasge.isRetain());
+            willMsg.setWillTopic(meaasge.getWillTopic());
+            willMsg.setWillMessage(meaasge.getWillMessage());
+            willMsg.setDeviceId(deviceId);
+            willMsg.insert();
+        }
     }
 
     @Override
@@ -294,6 +306,9 @@ public class MysqlDataBasePlugin implements MessageDataBasePlugin {
         Wrapper<WillMsg> wrapper = new EntityWrapper<>();
         wrapper.eq("deviceId",deviceId);
         WillMsg willMsg =  willMsgService.selectOne(wrapper);
+        if(null== willMsg){
+            return null;
+        }
         return WillMeaasge.builder()
                 .willMessage(willMsg.getWillMessage())
                 .willTopic(willMsg.getWillTopic())

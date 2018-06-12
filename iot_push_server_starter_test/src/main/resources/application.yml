@@ -37,9 +37,9 @@ spring:
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
-    url: jdbc:mysql://rm-m5e01hh28l500t4u6.mysql.rds.aliyuncs.com:3306/health_dev?characterEncoding=utf8
-    username: magicopen
-    password: MagicOpen2017
+    url: jdbc:mysql://127.0.0.1:3306/mqtt?characterEncoding=utf8
+    username: root
+    password: root
     druid:
       initial-size: 5
       max-active: 20
@@ -52,7 +52,7 @@ mybatis-plus:
     #字段策略 0:"忽略判断",1:"非 NULL 判断"),2:"非空判断"
     field-strategy: 1
     #驼峰下划线转换
-    db-column-underline: true
+    db-column-underline: false
     #刷新mapper 调试神器
     refresh-mapper: true
     #数据库大写下划线转换

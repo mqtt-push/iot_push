@@ -16,7 +16,7 @@ import java.util.Date;
 @Data
 public class BaseEntity<T extends Model> extends Model<T> {
 
-    public String id;
+    public Long id;
 
     @TableField(value = "update_time",fill = FieldFill.INSERT_UPDATE)
     public Date updateTime;
