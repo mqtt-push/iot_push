@@ -1,8 +1,9 @@
 package com.lxr.iot.bootstrap;
 
 import com.lxr.iot.bootstrap.bean.MqttChannel;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.Collection;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -56,8 +57,33 @@ public class SessionManager {
         return channelMap.keySet();
     }
 
+    /**
+     * 根据主题获取连接
+     * @param topic
+     * @return
+     */
+    public Collection<MqttChannel> getChannelByTopic(String topic){
+        List<MqttChannel> results = new ArrayList<>();
+        Collection<MqttChannel> channels =  channelMap.values();
+        Collection<String> topics = Arrays.asList(getTopic(topic));
+        if(null != results){
+            channels.stream().forEach(channel->{
+                if(channel.getTopic().containsAll(topics)){
+                    results.add(channel);
+                }
+            });
+            return results;
+        }
+        return null;
+    }
 
 
+
+    protected String[] getTopic(String topic)  {
+        return Optional.ofNullable(topic).map(s ->
+                StringUtils.split(topic,"/")
+        ).orElse(null);
+    }
 
 
 }

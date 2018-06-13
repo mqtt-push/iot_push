@@ -2,7 +2,7 @@ package com.lxr.iot.bootstrap;
 
 import com.lxr.iot.bootstrap.coder.ByteBufToWebSocketFrameEncoder;
 import com.lxr.iot.bootstrap.coder.WebSocketFrameToByteBufDecoder;
-import com.lxr.iot.bootstrap.handler.RouterPublishHandker;
+import com.lxr.iot.bootstrap.handler.RouterPublishHandler;
 import com.lxr.iot.properties.InitBean;
 import com.lxr.iot.ssl.SecureSocketSslContextFactory;
 import com.lxr.iot.util.SpringBeanUtils;
@@ -13,7 +13,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.mqtt.MqttDecoder;
 import io.netty.handler.codec.mqtt.MqttEncoder;
 import io.netty.handler.ssl.SslHandler;
-import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jboss.netty.util.internal.SystemPropertyUtil;
 
@@ -59,7 +58,7 @@ public abstract class AbstractBootstrapServer implements BootstrapServer {
         intProtocolHandler(channelPipeline,serverBean);
 
 //        channelPipeline.addLast(new IdleStateHandler(serverBean.getHeart(),0,0));
-        channelPipeline.addLast(new RouterPublishHandker(serverBean.getServerName()));
+        channelPipeline.addLast(new RouterPublishHandler(serverBean.getServerName()));
         channelPipeline.addLast(  SpringBeanUtils.getBean(serverBean.getMqttHander()));
 
     }

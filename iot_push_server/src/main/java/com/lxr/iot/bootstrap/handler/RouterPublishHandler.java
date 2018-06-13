@@ -24,13 +24,13 @@ import java.util.Map;
  * @Description
  */
 @Slf4j
-public class RouterPublishHandker extends ChannelInboundHandlerAdapter {
+public class RouterPublishHandler extends ChannelInboundHandlerAdapter {
 
     private RabbitTemplate rabbitTemplate;
 
     private String nodeName;
 
-    public RouterPublishHandker(String nodeName) {
+    public RouterPublishHandler(String nodeName) {
         this.nodeName = nodeName;
     }
 
@@ -52,9 +52,6 @@ public class RouterPublishHandker extends ChannelInboundHandlerAdapter {
                         .byteBuf(ByteBufUtil.copyByteBuf(publishMessage.payload().copy()))
                         .node(nodeName)
                         .build();
-                Map<String,Object> sendData = new HashMap<>();
-                sendData.put("topic",publishMessage.variableHeader().topicName());
-                sendData.put("msg",msgContent);
                 if(null == rabbitTemplate){
                     rabbitTemplate = SpringBeanUtils.getBean(RabbitTemplate.class);
                 }
