@@ -1,16 +1,15 @@
 package com.lxr.iot.auto.rabbitmq;
 
+import com.lxr.iot.properties.InitBean;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
-import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 
 /**
  * @author jason
@@ -18,26 +17,30 @@ import org.springframework.messaging.handler.annotation.support.DefaultMessageHa
  * @Description
  */
 @Configuration
-@EnableRabbit
 public class RabbitConfig  {
 
-    public static final String QUEUE_NAME="topic.server.messages";
-    public static final String QUEUE_EXCHANGE="topic.server.exchange";
+    @Autowired
+    private InitBean propertiers;
 
+    public static final String QUEUE_NAME="server_messages.";
 
+    public static final String  EXCHANGE ="server-message-exchange";
+
+    @Bean("serverMsgQueue")
+    public Queue initServerQueue() {
+        return new Queue(QUEUE_NAME+propertiers.getServerName());
+    }
+
+    //配置广播路由器
     @Bean
-    public Queue queueMessages() {
-        return new Queue(QUEUE_NAME);
+    public FanoutExchange fanoutExchange() {
+        return new FanoutExchange(EXCHANGE);
     }
 
     @Bean
-    TopicExchange exchange() {
-        return new TopicExchange(QUEUE_EXCHANGE);
+    Binding bindingExchangeA(@Qualifier("serverMsgQueue") Queue queue, FanoutExchange fanoutExchange) {
+        return BindingBuilder.bind(queue).to(fanoutExchange);
     }
 
-    @Bean
-    Binding bindingExchangeMessages(Queue queueMessages, TopicExchange exchange) {
-        return BindingBuilder.bind(queueMessages).to(exchange).with("topic.#");
-    }
 
 }

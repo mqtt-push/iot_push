@@ -106,7 +106,11 @@ public class RedisDataBasePlugin implements MessageDataBasePlugin {
     public void clearSub(String clientId) {
         BoundHashOperations boundHashOperations = redisTemplate.boundHashOps(KEY_FREFIX + "sub:" + clientId);
         Set<String> keys = boundHashOperations.keys();
-        Optional.ofNullable(keys).ifPresent(key->key.forEach(item->boundHashOperations.delete(item)));
+        Optional.ofNullable(keys).ifPresent(key->key.forEach(item->{
+            boundHashOperations.delete(item);
+            redisTemplate.boundSetOps(KEY_FREFIX + "sub-client:" + item).remove(clientId);
+        }));
+
     }
 
     @Override
@@ -160,6 +164,11 @@ public class RedisDataBasePlugin implements MessageDataBasePlugin {
         }else{
             log.error("确认消息不存在  "+messageId);
         }
+    }
+
+    @Override
+    public void clearAckMsg(String deviceId) {
+        redisTemplate.delete(KEY_FREFIX+"ack:message:"+deviceId);
     }
 
     @Override

@@ -1,11 +1,10 @@
 package com.lxr.iot.auto.rabbitmq;
 
-import io.netty.handler.codec.mqtt.MqttMessage;
-import io.netty.handler.codec.mqtt.MqttPublishMessage;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import com.lxr.iot.server.bean.SendMqttMessage;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * @author jason
@@ -15,8 +14,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class QueueListener {
 
-    @RabbitListener(queues = RabbitConfig.QUEUE_NAME)
-    public void process(MqttMessage msg) {
+    @RabbitListener(queues = RabbitConfig.QUEUE_NAME+"${lxr.iot.server.serverName}")
+    public void process(SendMqttMessage msg) {
         System.out.println("topicMessageReceiver  : " +msg);
     }
 }

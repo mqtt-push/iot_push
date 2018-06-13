@@ -137,6 +137,13 @@ public interface MessageDataBasePlugin {
     void updateClientAckMessage(String deviceId,Integer messageId,ConfirmStatus status);
 
     /**
+     * 清理待确认数据
+     * @param deviceId
+     */
+    void clearAckMsg(String deviceId);
+
+
+    /**
      * 添加客户端接收的消息
      * @param messageId
      * @param deviceId
@@ -185,4 +192,7 @@ public interface MessageDataBasePlugin {
      * @return
      */
     Collection<SendMqttMessage> getClientAckMessages(String device);
+
+
+
 }

@@ -236,6 +236,13 @@ public class MysqlDataBasePlugin implements MessageDataBasePlugin {
     }
 
     @Override
+    public void clearAckMsg(String deviceId) {
+        Wrapper<AckMsg> wrapper = new EntityWrapper<>();
+        wrapper.eq("deviceId",deviceId);
+        ackMsgService.delete(wrapper);
+    }
+
+    @Override
     public Collection<SendMqttMessage> getClientAckMessages(String device) {
         Wrapper<AckMsg> wrapper = new EntityWrapper<>();
         wrapper.eq("deviceId",device);
@@ -249,6 +256,7 @@ public class MysqlDataBasePlugin implements MessageDataBasePlugin {
                     .isRetain(msg.getRetain())
                     .qos(MqttQoS.valueOf(msg.getQos()))
                     .time(msg.getArrive().getTime())
+                    .messageId(msg.getMid())
                     .build();
            sendMqttMessageList.add(sendMqttMessage);
         }

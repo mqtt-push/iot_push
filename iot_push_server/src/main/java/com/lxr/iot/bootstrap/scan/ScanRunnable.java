@@ -47,6 +47,8 @@ public abstract class ScanRunnable  implements Runnable {
                         if(mqttMessage.getConfirmStatus() != ConfirmStatus.COMPLETE){
                             mqttMessage.setChannel(SessionManager.getInstance().getChannel(device).getChannel());
                             doInfo(mqttMessage);
+                        }else{
+                            dataBasePlugin.removeClientAckMessage(mqttMessage.getDeviceId(),mqttMessage.getMessageId());
                         }
 
                     }

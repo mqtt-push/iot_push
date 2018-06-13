@@ -50,12 +50,22 @@ public class PublishApiSevice {
     protected void sendQosConfirmMsg(MqttQoS qos, MqttChannel mqttChannel, String topic, byte[] bytes) {
         if(mqttChannel.isLogin()){
             int messageId = MessageId.messageId();
+            SendMqttMessage build = SendMqttMessage.builder()
+                    .channel(mqttChannel.getChannel())
+                    .confirmStatus(ConfirmStatus.PUB)
+                    .messageId(messageId)
+                    .topic(topic)
+                    .qos(qos)
+                    .byteBuf(bytes)
+                    .time(System.currentTimeMillis()).build();
             switch (qos){
                 case AT_LEAST_ONCE:
-                    mqttChannel.addSendMqttMessage(messageId,sendQos1Msg(mqttChannel.getChannel(),topic,false,bytes,messageId));
+                    mqttChannel.addSendMqttMessage(messageId,build);
+                    sendQos1Msg(mqttChannel.getChannel(),topic,false,bytes,messageId);
                     break;
                 case EXACTLY_ONCE:
-                    mqttChannel.addSendMqttMessage(messageId,sendQos2Msg(mqttChannel.getChannel(),topic,false,bytes,messageId));
+                    mqttChannel.addSendMqttMessage(messageId,build);
+                    sendQos2Msg(mqttChannel.getChannel(),topic,false,bytes,messageId);
                     break;
             }
         }

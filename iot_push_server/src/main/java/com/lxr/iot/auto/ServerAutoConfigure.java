@@ -41,7 +41,7 @@ public class ServerAutoConfigure {
         scanScheduled.setDataBasePlugin(dataBasePlugin);
         Thread scanRunnable = new Thread(scanScheduled);
         scanRunnable.setDaemon(true);
-        scanRunnable.start();
+//        scanRunnable.start();
         return scanScheduled;
     }
 

@@ -175,10 +175,12 @@ public class DbMqttChannelService extends AbstractChannelService   {
             executorService.execute(() -> {
                 MqttChannel mqttChannel = SessionManager.getInstance().getChannel(deviceId);
                 Optional.ofNullable(mqttChannel).ifPresent(mqttChannel1 -> {
-                    mqttChannel1.setSessionStatus(SessionStatus.CLOSE); // 设置关闭
+                    // 设置关闭
+                    mqttChannel1.setSessionStatus(SessionStatus.CLOSE);
                     mqttChannel1.close(); // 关闭channel
                     mqttChannel1.setChannel(null);
-                    if(!mqttChannel1.isCleanSession()){ // 保持会话
+                    // 保持会话
+                    if(!mqttChannel1.isCleanSession()){
                         // 处理 qos1 未确认数据
                         Collection<SendMqttMessage> message = mqttChannel1.getAllSendMessage();
                         Optional.ofNullable(message).ifPresent(integerConfirmMessageConcurrentHashMap -> {
@@ -193,8 +195,11 @@ public class DbMqttChannelService extends AbstractChannelService   {
 
                         });
                     }
-                    else{  // 删除sub topic-消息
-                        SessionManager.getInstance().removeChannel(deviceId); // 移除channelId  不保持会话 直接删除  保持会话 旧的在重新connect时替换
+                    else{
+                        // 删除sub topic-消息
+                        // 移除channelId  不保持会话 直接删除  保持会话 旧的在重新connect时替换
+                        SessionManager.getInstance().removeChannel(deviceId);
+                        dataBasePlugin.clearAckMsg(deviceId);
                         switch (mqttChannel1.getSubStatus()){
                             case YES:
                                 dataBasePlugin.clearSub(deviceId);

@@ -2,6 +2,7 @@ package com.lxr.iot.bootstrap;
 
 import com.lxr.iot.bootstrap.coder.ByteBufToWebSocketFrameEncoder;
 import com.lxr.iot.bootstrap.coder.WebSocketFrameToByteBufDecoder;
+import com.lxr.iot.bootstrap.handler.RouterPublishHandker;
 import com.lxr.iot.properties.InitBean;
 import com.lxr.iot.ssl.SecureSocketSslContextFactory;
 import com.lxr.iot.util.SpringBeanUtils;
@@ -57,7 +58,8 @@ public abstract class AbstractBootstrapServer implements BootstrapServer {
 
         intProtocolHandler(channelPipeline,serverBean);
 
-        channelPipeline.addLast(new IdleStateHandler(serverBean.getHeart(),0,0));
+//        channelPipeline.addLast(new IdleStateHandler(serverBean.getHeart(),0,0));
+        channelPipeline.addLast(new RouterPublishHandker(serverBean.getServerName()));
         channelPipeline.addLast(  SpringBeanUtils.getBean(serverBean.getMqttHander()));
 
     }

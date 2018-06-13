@@ -7,6 +7,8 @@ import io.netty.handler.codec.mqtt.MqttQoS;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * mqtt 消息
  *
@@ -15,11 +17,13 @@ import lombok.Data;
  **/
 @Builder
 @Data
-public class SendMqttMessage {
+public class SendMqttMessage implements Serializable {
 
     private int messageId;
 
     private String deviceId;
+
+    private String node;
 
     @JsonIgnore
     private Channel channel;
